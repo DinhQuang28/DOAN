@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Thông tin loại phòng')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-bed me-2 text-primary"></i><span th:text="${roomType.id != null ? 'Cập nhật loại phòng' : 'Thêm loại phòng mới'}">Thêm loại phòng</span></h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/room-types}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Quay lại</a>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-md-8 col-lg-6">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <form th:action="${roomType.id != null ? '/room-types/' + roomType.id : '/room-types'}" method="post" th:object="${roomType}">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Tên loại phòng <span class="text-danger">*</span></label>
+                                        <input type="text" th:field="*{name}" class="form-control" placeholder="Ví dụ: Phòng Đơn Standard, VIP Suite..." required/>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Số khách tối đa <span class="text-danger">*</span></label>
+                                            <input type="number" th:field="*{maxGuests}" class="form-control" min="1" max="10" required/>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Giá cơ bản / đêm (VNĐ) <span class="text-danger">*</span></label>
+                                            <input type="number" th:field="*{basePrice}" class="form-control" step="10000" min="0" required/>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Tiện nghi đi kèm</label>
+                                        <input type="text" th:field="*{amenities}" class="form-control" placeholder="WiFi, Smart TV, Điều hòa, Minibar, Bồn tắm nằm..."/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Mô tả loại phòng</label>
+                                        <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Mô tả không gian, hướng phòng, chính sách..."></textarea>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end gap-2 mt-4">
+                                        <a th:href="@{/room-types}" class="btn btn-secondary">Hủy bỏ</a>
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Lưu loại phòng</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

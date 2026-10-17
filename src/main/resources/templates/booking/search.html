@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Tra cứu phòng trống')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-search me-2 text-primary"></i>Tra cứu phòng trống theo thời gian</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/bookings}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Danh sách đặt phòng</a>
+                    </div>
+                </div>
+
+                <!-- Search form -->
+                <div class="card shadow-sm border-0 mb-4 bg-light">
+                    <div class="card-body p-4">
+                        <form th:action="@{/bookings/search}" method="get" class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold"><i class="fas fa-calendar-check me-1 text-primary"></i> Ngày nhận phòng <span class="text-danger">*</span></label>
+                                <input type="date" name="checkInDate" th:value="${searchDTO.checkInDate}" class="form-control" required/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold"><i class="fas fa-calendar-times me-1 text-danger"></i> Ngày trả phòng <span class="text-danger">*</span></label>
+                                <input type="date" name="checkOutDate" th:value="${searchDTO.checkOutDate}" class="form-control" required/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold"><i class="fas fa-bed me-1 text-info"></i> Loại phòng</label>
+                                <select name="roomTypeId" class="form-select">
+                                    <option value="">-- Tất cả loại phòng --</option>
+                                    <option th:each="rt : ${roomTypes}" th:value="${rt.id}" th:text="${rt.name}" th:selected="${searchDTO.roomTypeId == rt.id}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold"><i class="fas fa-users me-1 text-warning"></i> Số khách</label>
+                                <input type="number" name="numGuests" th:value="${searchDTO.numGuests}" class="form-control" min="1" max="10" placeholder="Số người"/>
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Search results -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">
+                        Kết quả tra cứu: <span class="text-primary fw-bold" th:text="${#lists.size(availableRooms)} + ' phòng trống'">15 phòng trống</span>
+                    </h4>
+                    <small class="text-muted">
+                        Từ ngày <strong th:text="${#temporals.format(searchDTO.checkInDate, 'dd/MM/yyyy')}">20/09/2026</strong> đến <strong th:text="${#temporals.format(searchDTO.checkOutDate, 'dd/MM/yyyy')}">22/09/2026</strong>
+                    </small>
+                </div>
+
+                <div th:if="${#lists.isEmpty(availableRooms)}" class="alert alert-warning text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2 text-warning d-block"></i>
+                    Không có phòng trống phù hợp trong khoảng thời gian đã chọn. Vui lòng chọn ngày khác!
+                </div>
+
+                <div class="row g-3">
+                    <div th:each="r : ${availableRooms}" class="col-md-6 col-lg-4 col-xl-3">
+                        <div class="card h-100 shadow-sm border-0 border-top border-success border-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h3 class="card-title fw-bold text-primary mb-0" th:text="'Phòng ' + ${r.roomNumber}">101</h3>
+                                    <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Có sẵn</span>
+                                </div>
+                                <h6 class="text-dark fw-bold" th:text="${r.roomType != null ? r.roomType.name : 'N/A'}">Phòng Đơn</h6>
+                                <p class="text-muted text-sm mb-2"><i class="fas fa-layer-group me-1"></i> Tầng <span th:text="${r.floor}">1</span> | Tối đa <span th:text="${r.roomType != null ? r.roomType.maxGuests : 2}">2</span> khách</p>
+                                
+                                <div class="p-2 bg-light rounded text-xs text-muted mb-3" th:text="${r.roomType != null ? r.roomType.amenities : ''}">
+                                    WiFi, TV, Điều hòa...
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                    <div>
+                                        <small class="text-muted d-block">Giá cơ bản</small>
+                                        <strong class="text-success fs-5" th:text="${r.roomType != null ? #numbers.formatDecimal(r.roomType.basePrice, 0, 'COMMA', 0, 'POINT') + ' đ' : '0 đ'}">300.000 đ</strong>
+                                    </div>
+                                    <a th:href="@{'/bookings/new?roomIds=' + ${r.id} + '&checkInDate=' + ${searchDTO.checkInDate} + '&checkOutDate=' + ${searchDTO.checkOutDate}}" 
+                                       class="btn btn-primary"><i class="fas fa-check me-1"></i> Chọn đặt</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

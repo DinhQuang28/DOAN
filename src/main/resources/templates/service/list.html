@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Dịch vụ đi kèm')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-concierge-bell me-2 text-primary"></i>Quản lý dịch vụ đi kèm</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/services/new}" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i> Thêm dịch vụ mới</a>
+                    </div>
+                </div>
+
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-1"></i> <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tên dịch vụ</th>
+                                        <th>Phân loại</th>
+                                        <th>Đơn giá</th>
+                                        <th>Mô tả</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(services)}">
+                                        <td colspan="6" class="text-center py-4 text-muted">Chưa có dịch vụ nào.</td>
+                                    </tr>
+                                    <tr th:each="s : ${services}">
+                                        <td><strong class="text-dark" th:text="${s.name}">Ăn sáng</strong></td>
+                                        <td><span class="badge bg-info text-dark" th:text="${s.category}">Ăn uống</span></td>
+                                        <td><span class="text-success fw-bold" th:text="${#numbers.formatDecimal(s.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">80.000 đ</span></td>
+                                        <td class="text-muted text-sm" th:text="${s.description}">Mô tả chi tiết</td>
+                                        <td>
+                                            <span th:if="${s.active}" class="badge bg-success">Đang phục vụ</span>
+                                            <span th:unless="${s.active}" class="badge bg-secondary">Tạm dừng</span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{'/services/' + ${s.id} + '/edit'}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></a>
+                                            <form th:action="@{'/services/' + ${s.id} + '/delete'}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa dịch vụ này?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

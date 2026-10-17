@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Chi tiết Phiếu Thu & Biên Lai Thanh Toán')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="main-content">
+                <!-- Action Bar (Hidden when printing) -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4 border-bottom no-print">
+                    <div>
+                        <h1 class="h3 fw-bold text-dark mb-1">
+                            <i class="fas fa-file-invoice-dollar me-2 text-primary"></i>Phiếu Thu: 
+                            <span class="text-primary" th:text="${payment.transactionRef}">PAY001</span>
+                            <span th:if="${payment.status.name() == 'COMPLETED'}" class="badge-soft badge-soft-success ms-2">Đã thanh toán</span>
+                            <span th:if="${payment.status.name() == 'REFUNDED'}" class="badge-soft badge-soft-danger ms-2">Đã hoàn tiền</span>
+                        </h1>
+                        <p class="text-muted text-sm mb-0">Biên lai thu tiền điện tử hợp lệ</p>
+                    </div>
+                    <div class="btn-toolbar mt-2 mt-md-0 gap-2">
+                        <button onclick="window.print()" class="btn btn-primary btn-gradient">
+                            <i class="fas fa-print me-1"></i> In phiếu thu
+                        </button>
+                        <a th:if="${booking != null}" th:href="@{'/bookings/' + ${booking.id}}" class="btn btn-outline-info">
+                            <i class="fas fa-bed me-1"></i> Xem đơn phòng
+                        </a>
+                        <button th:if="${payment.status.name() == 'COMPLETED'}" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#refundModal">
+                            <i class="fas fa-rotate-left me-1"></i> Hoàn tiền
+                        </button>
+                        <a th:href="@{/payments}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Sổ quỹ
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Alert Messages (Hidden when printing) -->
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show no-print" role="alert">
+                    <i class="fas fa-circle-check me-2 fs-5"></i>
+                    <div><span th:text="${successMessage}"></span></div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show no-print" role="alert">
+                    <i class="fas fa-triangle-exclamation me-2 fs-5"></i>
+                    <div><span th:text="${errorMessage}"></span></div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Print-Ready Receipt Container -->
+                <div class="receipt-container">
+                    <!-- Receipt Header -->
+                    <div class="receipt-header">
+                        <div class="row align-items-center">
+                            <div class="col-8">
+                                <h3 class="fw-bold text-dark mb-1" th:text="${property != null ? property.name : 'Sunshine Homestay & Resort'}">Sunshine Homestay</h3>
+                                <p class="text-muted text-sm mb-0">
+                                    <i class="fas fa-location-dot me-1"></i> <span th:text="${property != null ? property.address : '123 Nguyen Hue, Da Nang'}"></span><br/>
+                                    <i class="fas fa-phone me-1"></i> Hotline: <span th:text="${property != null ? property.phone : '0905.123.456'}"></span> | Email: <span th:text="${property != null ? property.email : 'contact@sunshinehomestay.vn'}"></span>
+                                </p>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="badge bg-light text-dark border p-2 text-start d-inline-block">
+                                    <div class="text-xs text-muted">Mã phiếu thu:</div>
+                                    <div class="fw-bold font-monospace fs-6 text-primary" th:text="${payment.transactionRef}">PAY001</div>
+                                    <div class="text-xs text-muted" th:text="${#temporals.format(payment.paidAt, 'dd/MM/yyyy HH:mm')}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <h4 class="fw-bold text-uppercase tracking-wider mb-1">PHIẾU THU TIỀN DỊCH VỤ</h4>
+                            <span class="text-muted text-xs text-uppercase">Official Payment Receipt</span>
+                        </div>
+                    </div>
+
+                    <!-- Customer & Booking Info -->
+                    <div class="row mb-4">
+                        <div class="col-7">
+                            <div class="mb-2">
+                                <span class="text-muted text-xs text-uppercase d-block">Họ tên người nộp tiền:</span>
+                                <strong class="fs-6 text-dark" th:text="${booking != null and booking.guest != null ? booking.guest.fullName : 'Khách vãng lai'}">Nguyễn Văn A</strong>
+                            </div>
+                            <div class="mb-2">
+                                <span class="text-muted text-xs text-uppercase d-block">Số điện thoại / CCCD:</span>
+                                <span th:text="${booking != null and booking.guest != null ? (booking.guest.phone + ' | CCCD: ' + (booking.guest.idNumber != null ? booking.guest.idNumber : 'N/A')) : 'N/A'}"></span>
+                            </div>
+                        </div>
+                        <div class="col-5 text-end">
+                            <div class="mb-2">
+                                <span class="text-muted text-xs text-uppercase d-block">Mã đơn đặt phòng:</span>
+                                <strong class="text-primary font-monospace fs-6" th:text="${booking != null ? booking.bookingCode : 'N/A'}">BK001</strong>
+                            </div>
+                            <div class="mb-2">
+                                <span class="text-muted text-xs text-uppercase d-block">Thời gian lưu trú:</span>
+                                <span th:text="${booking != null ? (#temporals.format(booking.checkInDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(booking.checkOutDate, 'dd/MM/yyyy')) : 'N/A'}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Items Table -->
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50px;" class="text-center">STT</th>
+                                    <th>Nội dung thanh toán</th>
+                                    <th>Phương thức</th>
+                                    <th class="text-end" style="width: 180px;">Số tiền (VNĐ)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-center">1</td>
+                                    <td>
+                                        <strong th:text="${payment.notes != null and !payment.notes.isEmpty() ? payment.notes : 'Thanh toán tiền phòng & dịch vụ đơn ' + (booking != null ? booking.bookingCode : '')}">Thanh toán</strong>
+                                        <div th:if="${bookingDetails != null}" class="text-xs text-muted mt-1">
+                                            Phòng: <span th:each="bd, stat : ${bookingDetails}" th:text="${bd.room.roomNumber + (stat.last ? '' : ', ')}"></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span th:if="${payment.method.name() == 'CASH'}">Tiền mặt</span>
+                                        <span th:if="${payment.method.name() == 'BANK_TRANSFER'}">Chuyển khoản VietQR</span>
+                                        <span th:if="${payment.method.name() == 'VNPAY'}">VNPAY-QR</span>
+                                        <span th:if="${payment.method.name() == 'MOMO'}">Ví MoMo</span>
+                                        <span th:if="${payment.method.name() == 'CREDIT_CARD'}">Thẻ tín dụng POS</span>
+                                    </td>
+                                    <td class="text-end fw-bold text-success fs-6" th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 0, 'POINT')} + ' đ'">300.000 đ</td>
+                                </tr>
+                                <tr class="table-active">
+                                    <th colspan="3" class="text-end">TỔNG SỐ TIỀN THU:</th>
+                                    <th class="text-end text-primary fs-5" th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 0, 'POINT')} + ' đ'">300.000 đ</th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Ledger Summary -->
+                    <div class="bg-light p-3 rounded mb-4" th:if="${booking != null}">
+                        <div class="row text-sm">
+                            <div class="col-4 text-center border-end">
+                                <span class="text-muted d-block text-xs">Tổng chi phí đơn:</span>
+                                <strong th:text="${#numbers.formatDecimal(currentTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'">500.000 đ</strong>
+                            </div>
+                            <div class="col-4 text-center border-end">
+                                <span class="text-muted d-block text-xs">Tổng tiền đã thu:</span>
+                                <strong class="text-success" th:text="${#numbers.formatDecimal(totalPaid, 0, 'COMMA', 0, 'POINT')} + ' đ'">300.000 đ</strong>
+                            </div>
+                            <div class="col-4 text-center">
+                                <span class="text-muted d-block text-xs">Dư nợ còn lại:</span>
+                                <strong class="text-danger" th:text="${#numbers.formatDecimal(balanceDue, 0, 'COMMA', 0, 'POINT')} + ' đ'">200.000 đ</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Signatures -->
+                    <div class="receipt-footer">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="fw-bold mb-1">Người nộp tiền</div>
+                                <div class="text-muted text-xs mb-5">(Ký, ghi rõ họ tên)</div>
+                                <div class="fw-semibold" th:text="${booking != null and booking.guest != null ? booking.guest.fullName : ''}"></div>
+                            </div>
+                            <div class="col-6">
+                                <div class="fw-bold mb-1">Người lập phiếu / Thu ngân</div>
+                                <div class="text-muted text-xs mb-5">(Ký, đóng dấu nếu có)</div>
+                                <div class="fw-semibold">Ban Quản Lý Homestay</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4 text-muted text-xs">
+                        <p class="mb-0">Cảm ơn quý khách đã tin tưởng và lựa chọn Sunshine Homestay! Chúc quý khách kỳ nghỉ tuyệt vời!</p>
+                    </div>
+                </div>
+
+                <!-- Refund Modal -->
+                <div class="modal fade" id="refundModal" tabindex="-1" th:if="${payment.status.name() == 'COMPLETED'}">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form th:action="@{'/payments/' + ${payment.id} + '/refund'}" method="post">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-danger"><i class="fas fa-rotate-left me-2"></i>Xác nhận hoàn tiền</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Bạn có chắc chắn muốn hoàn lại số tiền 
+                                       <strong class="text-danger" th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong> 
+                                       cho giao dịch <strong th:text="${payment.transactionRef}"></strong>?</p>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Lý do hoàn tiền</label>
+                                        <textarea name="reason" rows="3" class="form-control" placeholder="Nhập lý do khách hủy phòng hoặc thu nhầm tiền..." required></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                    <button type="submit" class="btn btn-danger">Xác nhận Hoàn tiền</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <script th:inline="javascript">
+        // Auto trigger print if print=1 in URL
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('print') === '1') {
+                window.print();
+            }
+        });
+    </script>
+</body>
+</html>

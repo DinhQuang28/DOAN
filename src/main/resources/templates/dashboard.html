@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Bảng điều khiển trung tâm')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="main-content">
+                <!-- Page Header with Modern Actions -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4 border-bottom">
+                    <div>
+                        <h1 class="h3 fw-bold text-dark mb-1">
+                            <i class="fas fa-chart-pie me-2 text-primary"></i>Bảng Điều Khiển Tổng Quan
+                        </h1>
+                        <p class="text-muted text-sm mb-0">Hệ thống vận hành phòng, trạng thái buồng và tài chính thu ngân trực tuyến</p>
+                    </div>
+                    <div class="btn-toolbar mt-2 mt-md-0 gap-2">
+                        <a th:href="@{/payments/new}" class="btn btn-outline-primary">
+                            <i class="fas fa-cash-register me-1"></i> Thu tiền / QR
+                        </a>
+                        <a th:href="@{/bookings/new}" class="btn btn-primary btn-gradient">
+                            <i class="fas fa-calendar-plus me-1"></i> Đặt phòng mới
+                        </a>
+                        <a th:href="@{/rooms/map}" class="btn btn-outline-secondary">
+                            <i class="fas fa-table-cells-large me-1"></i> Sơ đồ phòng
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 6 KPI Stat Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-4 col-xl-2">
+                        <div class="stat-card stat-primary">
+                            <div class="stat-icon">
+                                <i class="fas fa-door-closed"></i>
+                            </div>
+                            <div class="stat-title">Tổng số phòng</div>
+                            <div class="stat-value" th:text="${stats.totalRooms}">20</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-xl-2">
+                        <div class="stat-card stat-success">
+                            <div class="stat-icon">
+                                <i class="fas fa-circle-check"></i>
+                            </div>
+                            <div class="stat-title">Phòng trống</div>
+                            <div class="stat-value text-success" id="stat-available" th:text="${stats.availableRooms}">15</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-xl-2">
+                        <div class="stat-card stat-danger">
+                            <div class="stat-icon">
+                                <i class="fas fa-bed"></i>
+                            </div>
+                            <div class="stat-title">Đang lưu trú</div>
+                            <div class="stat-value text-danger" id="stat-occupied" th:text="${stats.occupiedRooms}">5</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-xl-2">
+                        <div class="stat-card stat-info">
+                            <div class="stat-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="stat-title">Check-in hôm nay</div>
+                            <div class="stat-value text-info" th:text="${stats.todayCheckIns}">3</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-xl-2">
+                        <div class="stat-card stat-warning">
+                            <div class="stat-icon">
+                                <i class="fas fa-arrow-right-from-bracket"></i>
+                            </div>
+                            <div class="stat-title">Check-out hôm nay</div>
+                            <div class="stat-value text-warning" th:text="${stats.todayCheckOuts}">2</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-xl-2">
+                        <div class="stat-card stat-dark">
+                            <div class="stat-icon">
+                                <i class="fas fa-sack-dollar"></i>
+                            </div>
+                            <div class="stat-title">Doanh thu tháng</div>
+                            <div class="stat-value fs-5 text-dark mt-1" th:text="${#numbers.formatDecimal(stats.monthlyRevenue, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Row -->
+                <div class="row g-4">
+                    <!-- Left: Recent Bookings Table -->
+                    <div class="col-12 col-xl-8">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                                <div class="fw-bold fs-6 text-dark">
+                                    <i class="fas fa-calendar-days me-2 text-primary"></i>Đơn đặt phòng gần đây
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <a th:href="@{/bookings}" class="btn btn-sm btn-link text-decoration-none fw-bold">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table-custom align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Mã đơn</th>
+                                                <th>Khách hàng</th>
+                                                <th>Nhận phòng</th>
+                                                <th>Trả phòng</th>
+                                                <th>Tổng tiền</th>
+                                                <th>Trạng thái</th>
+                                                <th class="text-center">Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:if="${#lists.isEmpty(recentBookings)}">
+                                                <td colspan="7" class="text-center py-4 text-muted">Chưa có đơn đặt phòng nào.</td>
+                                            </tr>
+                                            <tr th:each="b : ${recentBookings}">
+                                                <td>
+                                                    <a th:href="@{'/bookings/' + ${b.id}}" class="fw-bold text-decoration-none text-primary" th:text="${b.bookingCode}">BK001</a>
+                                                </td>
+                                                <td>
+                                                    <div class="fw-semibold text-dark" th:text="${b.guest != null ? b.guest.fullName : 'N/A'}">Nguyen Van A</div>
+                                                    <small class="text-muted" th:text="${b.guest != null ? b.guest.phone : ''}"></small>
+                                                </td>
+                                                <td th:text="${#temporals.format(b.checkInDate, 'dd/MM/yyyy')}">20/09/2026</td>
+                                                <td th:text="${#temporals.format(b.checkOutDate, 'dd/MM/yyyy')}">22/09/2026</td>
+                                                <td>
+                                                    <span class="text-primary fw-bold" th:text="${#numbers.formatDecimal(b.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">500.000 đ</span>
+                                                </td>
+                                                <td>
+                                                    <span th:if="${b.status.name() == 'PENDING'}" class="badge-soft badge-soft-warning">Chờ xác nhận</span>
+                                                    <span th:if="${b.status.name() == 'CONFIRMED'}" class="badge-soft badge-soft-primary">Đã xác nhận</span>
+                                                    <span th:if="${b.status.name() == 'CHECKED_IN'}" class="badge-soft badge-soft-success">Đang lưu trú</span>
+                                                    <span th:if="${b.status.name() == 'CHECKED_OUT'}" class="badge-soft badge-soft-secondary">Đã trả phòng</span>
+                                                    <span th:if="${b.status.name() == 'CANCELLED'}" class="badge-soft badge-soft-danger">Đã hủy</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="btn-group">
+                                                        <a th:href="@{'/bookings/' + ${b.id}}" class="btn btn-sm btn-outline-primary btn-icon" title="Chi tiết">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a th:href="@{'/payments/new?bookingId=' + ${b.id}}" class="btn btn-sm btn-outline-success btn-icon" title="Thu tiền đơn này">
+                                                            <i class="fas fa-hand-holding-dollar"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Room Status Grid -->
+                    <div class="col-12 col-xl-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                                <div class="fw-bold fs-6 text-dark">
+                                    <i class="fas fa-table-cells-large me-2 text-primary"></i>Sơ đồ phòng trực tuyến
+                                </div>
+                                <span class="badge-soft badge-soft-success live-dot-wrapper">
+                                    <span class="live-dot me-1"></span> Live
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <!-- Legend -->
+                                <div class="d-flex justify-content-between mb-3 text-xs flex-wrap gap-1 p-2 bg-light rounded-3">
+                                    <span class="d-flex align-items-center gap-1"><span class="badge bg-success p-1 rounded-circle"></span> Trống</span>
+                                    <span class="d-flex align-items-center gap-1"><span class="badge bg-danger p-1 rounded-circle"></span> Có khách</span>
+                                    <span class="d-flex align-items-center gap-1"><span class="badge bg-warning p-1 rounded-circle"></span> Dọn dẹp</span>
+                                    <span class="d-flex align-items-center gap-1"><span class="badge bg-secondary p-1 rounded-circle"></span> Bảo trì</span>
+                                </div>
+
+                                <!-- Floors -->
+                                <div id="mini-room-map">
+                                    <div th:each="floorEntry : ${roomMap}" class="mb-3">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <small class="text-muted fw-bold text-uppercase text-xs" th:text="'Tầng ' + ${floorEntry.key}">Tầng 1</small>
+                                            <span class="text-muted text-xs" th:text="${#lists.size(floorEntry.value)} + ' phòng'">5 phòng</span>
+                                        </div>
+                                        <div class="row g-2 text-center">
+                                            <div th:each="rm : ${floorEntry.value}" class="col-4 col-sm-auto flex-grow-1">
+                                                <a th:href="@{/rooms/map}" class="text-decoration-none">
+                                                    <div th:id="'room-' + ${rm.id}" 
+                                                         th:class="'room-card-modern ' + 
+                                                            (${rm.status.name() == 'AVAILABLE'} ? 'room-status-available' : 
+                                                            (${rm.status.name() == 'OCCUPIED'} ? 'room-status-occupied' : 
+                                                            (${rm.status.name() == 'CLEANING'} ? 'room-status-cleaning' : 'room-status-maintenance')))"
+                                                         th:title="${rm.roomNumber + ' - ' + rm.status.name()}">
+                                                        <span class="room-status-badge"></span>
+                                                        <div class="room-no" th:text="${rm.roomNumber}">101</div>
+                                                        <div class="room-meta" th:text="${rm.roomType != null ? rm.roomType.name : ''}">Phòng Đơn</div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3 text-center">
+                                    <a th:href="@{/rooms/map}" class="btn btn-outline-primary btn-sm w-100">
+                                        <i class="fas fa-arrow-up-right-from-square me-1"></i> Xem toàn bộ sơ đồ & Đổi trạng thái
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

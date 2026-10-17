@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Danh sách phòng')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-door-open me-2 text-primary"></i>Quản lý danh sách phòng</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/rooms/map}" class="btn btn-sm btn-outline-info me-2"><i class="fas fa-th-large me-1"></i> Sơ đồ trực quan</a>
+                        <a th:href="@{/rooms/new}" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i> Thêm phòng mới</a>
+                    </div>
+                </div>
+
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-1"></i> <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-1"></i> <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Filter card -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <form th:action="@{/rooms}" method="get" class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Trạng thái phòng</label>
+                                <select name="status" class="form-select">
+                                    <option value="">-- Tất cả trạng thái --</option>
+                                    <option th:each="st : ${statuses}" th:value="${st}" th:text="${st.name()}" th:selected="${selectedStatus == st}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Tầng</label>
+                                <select name="floor" class="form-select">
+                                    <option value="">-- Tất cả các tầng --</option>
+                                    <option value="1" th:selected="${selectedFloor == 1}">Tầng 1</option>
+                                    <option value="2" th:selected="${selectedFloor == 2}">Tầng 2</option>
+                                    <option value="3" th:selected="${selectedFloor == 3}">Tầng 3</option>
+                                    <option value="4" th:selected="${selectedFloor == 4}">Tầng 4</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Loại phòng</label>
+                                <select name="typeId" class="form-select">
+                                    <option value="">-- Tất cả loại phòng --</option>
+                                    <option th:each="rt : ${roomTypes}" th:value="${rt.id}" th:text="${rt.name}" th:selected="${selectedTypeId == rt.id}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2"><i class="fas fa-filter me-1"></i> Lọc</button>
+                                <a th:href="@{/rooms}" class="btn btn-outline-secondary"><i class="fas fa-redo me-1"></i> Đặt lại</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Số phòng</th>
+                                        <th>Tầng</th>
+                                        <th>Loại phòng</th>
+                                        <th>Giá cơ bản</th>
+                                        <th>Trạng thái hiện tại</th>
+                                        <th>Cập nhật nhanh</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(rooms)}">
+                                        <td colspan="7" class="text-center py-4 text-muted">Không tìm thấy phòng nào.</td>
+                                    </tr>
+                                    <tr th:each="r : ${rooms}">
+                                        <td><strong class="fs-5 text-primary" th:text="${r.roomNumber}">101</strong></td>
+                                        <td th:text="'Tầng ' + ${r.floor}">Tầng 1</td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border" th:text="${r.roomType != null ? r.roomType.name : 'N/A'}">Phòng Đơn</span>
+                                        </td>
+                                        <td th:text="${r.roomType != null ? #numbers.formatDecimal(r.roomType.basePrice, 0, 'COMMA', 0, 'POINT') + ' đ' : 'N/A'}">300.000 đ</td>
+                                        <td>
+                                            <span th:if="${r.status.name() == 'AVAILABLE'}" class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Trống</span>
+                                            <span th:if="${r.status.name() == 'OCCUPIED'}" class="badge bg-danger"><i class="fas fa-bed me-1"></i> Có khách</span>
+                                            <span th:if="${r.status.name() == 'CLEANING'}" class="badge bg-warning text-dark"><i class="fas fa-broom me-1"></i> Đang dọn</span>
+                                            <span th:if="${r.status.name() == 'MAINTENANCE'}" class="badge bg-secondary"><i class="fas fa-wrench me-1"></i> Bảo trì</span>
+                                            <span th:if="${r.status.name() == 'OUT_OF_ORDER'}" class="badge bg-dark"><i class="fas fa-ban me-1"></i> Ngừng SD</span>
+                                        </td>
+                                        <td>
+                                            <form th:action="@{'/rooms/' + ${r.id} + '/status'}" method="post" class="d-inline-flex align-items-center">
+                                                <input type="hidden" name="redirect" value="list"/>
+                                                <select name="status" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+                                                    <option th:each="st : ${statuses}" th:value="${st}" th:text="${st.name()}" th:selected="${r.status == st}"></option>
+                                                </select>
+                                            </form>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{'/rooms/' + ${r.id} + '/edit'}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></a>
+                                            <form th:action="@{'/rooms/' + ${r.id} + '/delete'}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa phòng này?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

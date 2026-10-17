@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Làm thủ tục nhận phòng (Check-in)')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-sign-in-alt me-2 text-success"></i>Thủ tục Check-in nhận phòng</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{'/bookings/' + ${booking.id}}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Quay lại chi tiết</a>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-md-8 col-lg-7">
+                        <div class="card shadow-sm border-0 border-top border-success border-4">
+                            <div class="card-body p-4">
+                                <h4 class="card-title fw-bold mb-3">Xác nhận thông tin khách lưu trú</h4>
+                                <div class="p-3 bg-light rounded mb-4">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <span class="text-muted">Mã đơn đặt:</span>
+                                            <strong class="text-primary fs-5 d-block" th:text="${booking.bookingCode}">BK001</strong>
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <span class="text-muted">Khách đặt:</span>
+                                            <strong class="d-block" th:text="${booking.guest.fullName}">Nguyễn Văn A</strong>
+                                        </div>
+                                        <div class="col-12 mt-2">
+                                            <span class="text-muted">Phòng giao cho khách:</span>
+                                            <div class="d-flex gap-2 mt-1">
+                                                <span th:each="d : ${details}" class="badge bg-primary fs-6" th:text="'Phòng ' + ${d.room.roomNumber} + ' (' + ${d.room.roomType.name} + ')'">Phòng 101</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <form th:action="@{'/bookings/' + ${booking.id} + '/checkin'}" method="post" th:object="${checkInDTO}">
+                                    <input type="hidden" th:field="*{bookingId}"/>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold"><i class="fas fa-id-card me-1 text-primary"></i> Quét / Nhập số CCCD hoặc Passport của khách <span class="text-danger">*</span></label>
+                                        <input type="text" th:field="*{guestIdNumber}" class="form-control form-control-lg" placeholder="Ví dụ: 048123456789" required autofocus/>
+                                        <small class="text-muted">Hệ thống sẽ tự động cập nhật số CCCD này vào hồ sơ khách hàng để lưu trữ theo luật cư trú.</small>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label">Ghi chú lúc nhận phòng (tùy chọn)</label>
+                                        <textarea th:field="*{notes}" class="form-control" rows="2" placeholder="Ví dụ: Đã giao 2 thẻ từ, khách gửi 1 vali..."></textarea>
+                                    </div>
+
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-success btn-lg"><i class="fas fa-key me-2"></i> Xác nhận Giao phòng & Hoàn tất Check-in</button>
+                                        <a th:href="@{'/bookings/' + ${booking.id}}" class="btn btn-outline-secondary">Hủy bỏ</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

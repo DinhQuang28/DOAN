@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Quản lý đặt phòng')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-calendar-check me-2 text-primary"></i>Danh sách đơn đặt phòng</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/bookings/search}" class="btn btn-sm btn-outline-primary me-2"><i class="fas fa-search me-1"></i> Tra cứu phòng trống</a>
+                        <a th:href="@{/bookings/new}" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i> Tạo đặt phòng mới</a>
+                    </div>
+                </div>
+
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-1"></i> <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-1"></i> <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Filter -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <form th:action="@{/bookings}" method="get" class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Trạng thái</label>
+                                <select name="status" class="form-select">
+                                    <option value="">-- Tất cả trạng thái --</option>
+                                    <option th:each="st : ${statuses}" th:value="${st}" th:text="${st.name()}" th:selected="${selectedStatus == st}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Từ ngày nhận</label>
+                                <input type="date" name="startDate" th:value="${startDate}" class="form-control"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Đến ngày trả</label>
+                                <input type="date" name="endDate" th:value="${endDate}" class="form-control"/>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2"><i class="fas fa-filter me-1"></i> Lọc</button>
+                                <a th:href="@{/bookings}" class="btn btn-outline-secondary"><i class="fas fa-redo me-1"></i> Đặt lại</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Khách hàng</th>
+                                        <th>Ngày nhận</th>
+                                        <th>Ngày trả</th>
+                                        <th>Kênh</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hành động nhanh</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(bookings)}">
+                                        <td colspan="8" class="text-center py-4 text-muted">Không tìm thấy đơn đặt phòng nào.</td>
+                                    </tr>
+                                    <tr th:each="b : ${bookings}">
+                                        <td>
+                                            <a th:href="@{'/bookings/' + ${b.id}}" class="fw-bold text-decoration-none text-primary" th:text="${b.bookingCode}">BK20260927001</a>
+                                        </td>
+                                        <td>
+                                            <strong th:text="${b.guest != null ? b.guest.fullName : 'N/A'}">Nguyễn Văn A</strong>
+                                            <small class="d-block text-muted" th:text="${b.guest != null ? b.guest.phone : ''}">0905123456</small>
+                                        </td>
+                                        <td th:text="${#temporals.format(b.checkInDate, 'dd/MM/yyyy')}">20/09/2026</td>
+                                        <td th:text="${#temporals.format(b.checkOutDate, 'dd/MM/yyyy')}">22/09/2026</td>
+                                        <td><span class="badge bg-light text-dark border" th:text="${b.channel}">WALK_IN</span></td>
+                                        <td>
+                                            <span class="text-success fw-bold" th:text="${#numbers.formatDecimal(b.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">500.000 đ</span>
+                                            <small th:if="${b.discount != null and b.discount > 0}" class="d-block text-danger">-<span th:text="${#numbers.formatDecimal(b.discount, 0, 'COMMA', 0, 'POINT')}"></span> đ</small>
+                                        </td>
+                                        <td>
+                                            <span th:if="${b.status.name() == 'PENDING'}" class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i> Chờ duyệt</span>
+                                            <span th:if="${b.status.name() == 'CONFIRMED'}" class="badge bg-primary"><i class="fas fa-check me-1"></i> Đã xác nhận</span>
+                                            <span th:if="${b.status.name() == 'CHECKED_IN'}" class="badge bg-success"><i class="fas fa-bed me-1"></i> Đang ở</span>
+                                            <span th:if="${b.status.name() == 'CHECKED_OUT'}" class="badge bg-secondary"><i class="fas fa-door-closed me-1"></i> Đã trả phòng</span>
+                                            <span th:if="${b.status.name() == 'CANCELLED'}" class="badge bg-danger"><i class="fas fa-times me-1"></i> Đã hủy</span>
+                                            <span th:if="${b.status.name() == 'HOLD'}" class="badge bg-dark"><i class="fas fa-pause me-1"></i> Giữ chỗ</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a th:href="@{'/bookings/' + ${b.id}}" class="btn btn-sm btn-outline-info" title="Xem chi tiết"><i class="fas fa-eye"></i></a>
+                                                <a th:href="@{'/payments/new?bookingId=' + ${b.id}}" class="btn btn-sm btn-outline-primary" title="Lập phiếu thu / QR"><i class="fas fa-hand-holding-dollar"></i></a>
+                                                <a th:if="${b.status.name() == 'CONFIRMED'}" th:href="@{'/bookings/' + ${b.id} + '/checkin'}" class="btn btn-sm btn-outline-success" title="Check-in"><i class="fas fa-sign-in-alt"></i></a>
+                                                <a th:if="${b.status.name() == 'CHECKED_IN'}" th:href="@{'/bookings/' + ${b.id} + '/checkout'}" class="btn btn-sm btn-outline-warning" title="Check-out & Tính tiền"><i class="fas fa-file-invoice-dollar"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

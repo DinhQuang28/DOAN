@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Làm thủ tục trả phòng & Thanh toán (Check-out)')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-file-invoice-dollar me-2 text-warning"></i>Thủ tục Check-out & Quyết toán hóa đơn</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{'/bookings/' + ${booking.id}}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Quay lại chi tiết</a>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-md-9 col-lg-8">
+                        <div class="card shadow-sm border-0 border-top border-warning border-4 mb-4">
+                            <div class="card-body p-4">
+                                <h4 class="card-title fw-bold mb-3">Hóa đơn thanh toán lưu trú</h4>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Khách hàng:</strong> <span th:text="${booking.guest.fullName}"></span> (<span th:text="${booking.guest.phone}"></span>)</p>
+                                        <p class="mb-1"><strong>Mã đơn:</strong> <span class="badge bg-light text-dark border" th:text="${booking.bookingCode}"></span></p>
+                                    </div>
+                                    <div class="col-md-6 text-md-end">
+                                        <p class="mb-1"><strong>Thời gian ở:</strong> <span th:text="${#temporals.format(booking.checkInDate, 'dd/MM/yyyy')} + ' -> ' + ${#temporals.format(booking.checkOutDate, 'dd/MM/yyyy')}"></span></p>
+                                        <p class="mb-1"><strong>Kênh:</strong> <span th:text="${booking.channel}"></span></p>
+                                    </div>
+                                </div>
+
+                                <!-- Itemized breakdown -->
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-bordered align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Khoản mục</th>
+                                                <th>Số lượng / Chi tiết</th>
+                                                <th class="text-end">Thành tiền</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="d : ${details}">
+                                                <td>Tiền phòng <strong th:text="${d.room.roomNumber}"></strong> (<span th:text="${d.room.roomType.name}"></span>)</td>
+                                                <td>1 phòng trọn gói</td>
+                                                <td class="text-end fw-bold" th:text="${#numbers.formatDecimal(d.roomPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                                            </tr>
+                                            <th:block th:each="d : ${details}">
+                                                <tr th:each="u : ${serviceUsageRepo.findByBookingDetailId(d.id)}">
+                                                    <td>Dịch vụ: <span th:text="${u.serviceEntity.name}"></span> (Phòng <span th:text="${d.room.roomNumber}"></span>)</td>
+                                                    <td th:text="${u.quantity} + ' x ' + ${#numbers.formatDecimal(u.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                                                    <td class="text-end" th:text="${#numbers.formatDecimal(u.unitPrice * u.quantity, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                                                </tr>
+                                            </th:block>
+                                            <tr th:if="${booking.discount != null and booking.discount > 0}" class="text-danger">
+                                                <td colspan="2">Giảm giá khuyến mãi / Voucher</td>
+                                                <td class="text-end fw-bold">-<span th:text="${#numbers.formatDecimal(booking.discount, 0, 'COMMA', 0, 'POINT')}"></span> đ</td>
+                                            </tr>
+                                            <tr class="table-active fs-5">
+                                                <th colspan="2">Tổng hóa đơn phải thanh toán:</th>
+                                                <th class="text-end text-primary fw-bold" th:text="${#numbers.formatDecimal(currentTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'">500.000 đ</th>
+                                            </tr>
+                                            <tr th:if="${totalPaid > 0}" class="text-success">
+                                                <td colspan="2">Số tiền khách đã trả trước:</td>
+                                                <td class="text-end fw-bold" th:text="${#numbers.formatDecimal(totalPaid, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</td>
+                                            </tr>
+                                            <tr class="table-warning fs-4">
+                                                <th colspan="2">Số tiền còn phải thanh toán ngay:</th>
+                                                <th class="text-end text-danger fw-bold" th:text="${#numbers.formatDecimal(balanceDue, 0, 'COMMA', 0, 'POINT')} + ' đ'">500.000 đ</th>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Payment form -->
+                                <form th:action="@{'/bookings/' + ${booking.id} + '/checkout'}" method="post" th:object="${checkOutDTO}">
+                                    <input type="hidden" th:field="*{bookingId}"/>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold"><i class="fas fa-credit-card me-1 text-primary"></i> Phương thức thanh toán <span class="text-danger">*</span></label>
+                                            <select th:field="*{paymentMethod}" id="checkoutMethodSelect" class="form-select form-select-lg" required onchange="toggleCheckoutQr(this.value)">
+                                                <option th:each="m : ${paymentMethods}" th:value="${m}" th:text="${m.name()}"></option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Ghi chú thanh toán</label>
+                                            <input type="text" th:field="*{notes}" class="form-control form-control-lg" placeholder="Ví dụ: Đã nhận đủ tiền mặt / chuyển khoản MB..."/>
+                                        </div>
+                                    </div>
+
+                                    <!-- QR Box for Checkout -->
+                                    <div id="checkoutQrBox" class="payment-qr-container mb-3" style="display: none;">
+                                        <div class="fw-bold text-primary mb-1"><i class="fas fa-qrcode me-1"></i>Quét mã VietQR chuyển khoản nhanh</div>
+                                        <div class="text-muted text-xs mb-2">Số tiền thanh toán: <strong class="text-success" th:text="${#numbers.formatDecimal(balanceDue, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong></div>
+                                        <div class="qr-code-frame">
+                                            <img th:src="'https://img.vietqr.io/image/MB-0905123456-compact2.png?amount=' + ${balanceDue} + '&addInfo=SUNSHINE%20' + ${booking.bookingCode} + '&accountName=SUNSHINE%20HOMESTAY'" alt="VietQR" style="width: 200px; height: 200px; object-fit: contain;"/>
+                                        </div>
+                                        <div class="text-xs text-muted mt-2">MB Bank - STK: <strong>0905123456</strong> - SUNSHINE HOMESTAY</div>
+                                    </div>
+
+                                    <div class="alert alert-info mt-3">
+                                        <i class="fas fa-info-circle me-1"></i> Sau khi bấm xác nhận:
+                                        <ul class="mb-0 mt-1 ps-3">
+                                            <li>Tự động ghi nhận giao dịch thanh toán thành công vào Sổ quỹ</li>
+                                            <li>Phòng sẽ chuyển sang trạng thái <strong>ĐANG DỌN (CLEANING)</strong> để nhân viên buồng phòng dọn dẹp</li>
+                                            <li>Tích lũy điểm khách hàng thân thiết cho khách: <strong>1 điểm cho mỗi 100.000 VNĐ</strong></li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="d-grid gap-2 mt-4">
+                                        <button type="submit" class="btn btn-warning btn-lg fw-bold"><i class="fas fa-check-double me-1"></i> Hoàn tất Check-out & Thu tiền</button>
+                                        <a th:href="@{'/bookings/' + ${booking.id}}" class="btn btn-outline-secondary">Hủy bỏ</a>
+                                    </div>
+                                </form>
+
+                                <script>
+                                    function toggleCheckoutQr(val) {
+                                        const box = document.getElementById('checkoutQrBox');
+                                        if (val === 'BANK_TRANSFER' || val === 'VNPAY' || val === 'MOMO') {
+                                            box.style.display = 'block';
+                                        } else {
+                                            box.style.display = 'none';
+                                        }
+                                    }
+                                    document.addEventListener("DOMContentLoaded", function() {
+                                        const sel = document.getElementById('checkoutMethodSelect');
+                                        if (sel) toggleCheckoutQr(sel.value);
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

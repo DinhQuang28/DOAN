@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments/layout :: head('Quản lý Thanh toán & Thu ngân')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="main-content">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-3 mb-4 border-bottom">
+                    <div>
+                        <h1 class="h3 fw-bold text-dark mb-1">
+                            <i class="fas fa-cash-register me-2 text-primary"></i>Sổ Quỹ & Giao Dịch Thanh Toán
+                        </h1>
+                        <p class="text-muted text-sm mb-0">Theo dõi dòng tiền, lịch sử thu tiền phòng & dịch vụ, tạo mã QR thanh toán nhanh</p>
+                    </div>
+                    <div class="btn-toolbar mt-2 mt-md-0 gap-2">
+                        <a th:href="@{/payments/new}" class="btn btn-primary btn-gradient">
+                            <i class="fas fa-plus-circle me-1"></i> Lập phiếu thu tiền mới
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Alert Messages -->
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-circle-check me-2 fs-5"></i>
+                    <div><span th:text="${successMessage}"></span></div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-triangle-exclamation me-2 fs-5"></i>
+                    <div><span th:text="${errorMessage}"></span></div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- KPI Metric Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="stat-card stat-primary">
+                            <div class="stat-icon">
+                                <i class="fas fa-vault"></i>
+                            </div>
+                            <div class="stat-title">Tổng doanh thu thực thu</div>
+                            <div class="stat-value text-primary" th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</div>
+                            <small class="text-muted text-xs"><i class="fas fa-shield-alt text-success me-1"></i>Đã quyết toán vào sổ quỹ</small>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="stat-card stat-success">
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <div class="stat-title">Tiền thu hôm nay</div>
+                            <div class="stat-value text-success" th:text="${#numbers.formatDecimal(todayTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</div>
+                            <small class="text-muted text-xs"><i class="fas fa-arrow-trend-up text-success me-1"></i>Cập nhật thời gian thực</small>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="stat-card stat-info">
+                            <div class="stat-icon">
+                                <i class="fas fa-circle-check"></i>
+                            </div>
+                            <div class="stat-title">Giao dịch thành công</div>
+                            <div class="stat-value text-info" th:text="${totalSuccess}">0</div>
+                            <small class="text-muted text-xs">Phiếu thu hợp lệ hoàn tất</small>
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <div class="stat-card stat-danger">
+                            <div class="stat-icon">
+                                <i class="fas fa-rotate-left"></i>
+                            </div>
+                            <div class="stat-title">Giao dịch hoàn tiền</div>
+                            <div class="stat-value text-danger" th:text="${totalRefunded}">0</div>
+                            <small class="text-muted text-xs">Khách trả cọc / hủy đơn</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Card -->
+                <div class="card mb-4">
+                    <div class="card-body p-3">
+                        <form th:action="@{/payments}" method="get" class="row g-2 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label">Tìm kiếm</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                                    <input type="text" name="keyword" th:value="${keyword}" class="form-control border-start-0" placeholder="Mã GD, mã đơn, tên khách..."/>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Phương thức</label>
+                                <select name="method" class="form-select">
+                                    <option value="">-- Tất cả hình thức --</option>
+                                    <option th:each="m : ${methods}" th:value="${m}" th:text="${m.name()}" th:selected="${m == selectedMethod}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Trạng thái</label>
+                                <select name="status" class="form-select">
+                                    <option value="">-- Tất cả trạng thái --</option>
+                                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s.name()}" th:selected="${s == selectedStatus}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Từ ngày</label>
+                                <input type="date" name="startDate" th:value="${startDate}" class="form-control"/>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Đến ngày</label>
+                                <input type="date" name="endDate" th:value="${endDate}" class="form-control"/>
+                            </div>
+                            <div class="col-md-1 d-flex gap-1">
+                                <button type="submit" class="btn btn-primary w-100" title="Tìm kiếm">
+                                    <i class="fas fa-filter"></i>
+                                </button>
+                                <a th:href="@{/payments}" class="btn btn-outline-secondary" title="Đặt lại bộ lọc">
+                                    <i class="fas fa-rotate"></i>
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Payments Table Card -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header d-flex justify-content-between align-items-center py-3 bg-white">
+                        <div class="fw-bold fs-6 text-dark">
+                            <i class="fas fa-list-check me-2 text-primary"></i>Danh sách phiếu thu (<span th:text="${#lists.size(payments)}">0</span> giao dịch)
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted text-xs">Cập nhật tự động</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table-custom align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Mã giao dịch</th>
+                                        <th>Mã đơn phòng</th>
+                                        <th>Khách hàng</th>
+                                        <th>Phương thức</th>
+                                        <th class="text-end">Số tiền thu</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thời gian</th>
+                                        <th class="text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(payments)}">
+                                        <td colspan="8" class="text-center py-5">
+                                            <div class="text-muted my-3">
+                                                <i class="fas fa-receipt fa-3x text-secondary opacity-50 mb-3 d-block"></i>
+                                                <h6 class="fw-bold">Không tìm thấy giao dịch thanh toán nào</h6>
+                                                <p class="text-sm">Chưa có phiếu thu nào khớp với bộ lọc hoặc cơ sở dữ liệu trống.</p>
+                                                <a th:href="@{/payments/new}" class="btn btn-sm btn-primary mt-2">
+                                                    <i class="fas fa-plus me-1"></i> Tạo phiếu thu mới
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:each="p : ${payments}">
+                                        <td>
+                                            <a th:href="@{'/payments/' + ${p.id}}" class="fw-bold text-decoration-none text-primary">
+                                                <i class="fas fa-file-invoice text-muted me-1"></i><span th:text="${p.transactionRef != null ? p.transactionRef : 'PAY' + p.id}">PAY001</span>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a th:if="${p.booking != null}" th:href="@{'/bookings/' + ${p.booking.id}}" class="badge-soft badge-soft-primary text-decoration-none" title="Xem chi tiết đơn">
+                                                <i class="fas fa-bed me-1"></i><span th:text="${p.booking.bookingCode}">BK001</span>
+                                            </a>
+                                            <span th:if="${p.booking == null}" class="text-muted text-xs">N/A</span>
+                                        </td>
+                                        <td>
+                                            <div th:if="${p.booking != null and p.booking.guest != null}">
+                                                <div class="fw-semibold text-dark" th:text="${p.booking.guest.fullName}">Nguyễn Văn A</div>
+                                                <small class="text-muted" th:text="${p.booking.guest.phone}">0905123456</small>
+                                            </div>
+                                            <span th:if="${p.booking == null or p.booking.guest == null}" class="text-muted">Khách vãng lai</span>
+                                        </td>
+                                        <td>
+                                            <!-- Payment method badge -->
+                                            <span th:if="${p.method.name() == 'CASH'}" class="badge-soft badge-soft-warning">
+                                                <i class="fas fa-money-bill-wave"></i> Tiền mặt
+                                            </span>
+                                            <span th:if="${p.method.name() == 'BANK_TRANSFER'}" class="badge-soft badge-soft-info">
+                                                <i class="fas fa-building-columns"></i> Chuyển khoản VietQR
+                                            </span>
+                                            <span th:if="${p.method.name() == 'VNPAY'}" class="badge-soft badge-soft-primary">
+                                                <i class="fas fa-qrcode"></i> VNPAY-QR
+                                            </span>
+                                            <span th:if="${p.method.name() == 'MOMO'}" class="badge-soft" style="background-color: #fdf2f8; color: #db2777;">
+                                                <i class="fas fa-wallet"></i> Ví MoMo
+                                            </span>
+                                            <span th:if="${p.method.name() == 'CREDIT_CARD'}" class="badge-soft badge-soft-secondary">
+                                                <i class="fas fa-credit-card"></i> Thẻ tín dụng
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="fs-6 fw-bold text-success" th:text="${#numbers.formatDecimal(p.amount, 0, 'COMMA', 0, 'POINT')} + ' đ'">300.000 đ</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${p.status.name() == 'COMPLETED'}" class="badge-soft badge-soft-success">
+                                                <i class="fas fa-circle-check"></i> Thành công
+                                            </span>
+                                            <span th:if="${p.status.name() == 'PENDING'}" class="badge-soft badge-soft-warning">
+                                                <i class="fas fa-clock"></i> Đang chờ
+                                            </span>
+                                            <span th:if="${p.status.name() == 'REFUNDED'}" class="badge-soft badge-soft-danger">
+                                                <i class="fas fa-rotate-left"></i> Đã hoàn tiền
+                                            </span>
+                                            <span th:if="${p.status.name() == 'FAILED'}" class="badge-soft badge-soft-secondary">
+                                                <i class="fas fa-circle-xmark"></i> Thất bại
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted" th:text="${#temporals.format(p.paidAt, 'dd/MM/yyyy HH:mm')}">20/09/2026 14:30</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <a th:href="@{'/payments/' + ${p.id}}" class="btn btn-sm btn-outline-primary btn-icon" title="Xem chi tiết & In phiếu thu">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a th:href="@{'/payments/' + ${p.id} + '?print=1'}" target="_blank" class="btn btn-sm btn-outline-secondary btn-icon" title="In phiếu thu ngay">
+                                                    <i class="fas fa-print"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Bảng giá theo mùa')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-tags me-2 text-primary"></i>Quản lý giá phòng theo mùa / ngày lễ</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/price-seasons/new}" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i> Thêm giá mùa mới</a>
+                    </div>
+                </div>
+
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-1"></i> <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Filter -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <form th:action="@{/price-seasons}" method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Chọn loại phòng</label>
+                                <select name="roomTypeId" class="form-select" onchange="this.form.submit()">
+                                    <option value="">-- Tất cả loại phòng --</option>
+                                    <option th:each="rt : ${roomTypes}" th:value="${rt.id}" th:text="${rt.name}" th:selected="${selectedTypeId == rt.id}"></option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Loại phòng</th>
+                                        <th>Tên mùa / Dịp lễ</th>
+                                        <th>Từ ngày</th>
+                                        <th>Đến ngày</th>
+                                        <th>Giá áp dụng / đêm</th>
+                                        <th>Mô tả</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(seasons)}">
+                                        <td colspan="7" class="text-center py-4 text-muted">Chưa có cấu hình giá mùa nào.</td>
+                                    </tr>
+                                    <tr th:each="s : ${seasons}">
+                                        <td><strong th:text="${s.roomType != null ? s.roomType.name : 'N/A'}">Phòng Đơn</strong></td>
+                                        <td><span class="badge bg-primary" th:text="${s.seasonName}">Mùa hè cao điểm</span></td>
+                                        <td th:text="${#temporals.format(s.startDate, 'dd/MM/yyyy')}">01/06/2026</td>
+                                        <td th:text="${#temporals.format(s.endDate, 'dd/MM/yyyy')}">31/08/2026</td>
+                                        <td><span class="text-success fw-bold fs-6" th:text="${#numbers.formatDecimal(s.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">450.000 đ</span></td>
+                                        <td class="text-muted text-sm" th:text="${s.description}">Tăng giá dịp du lịch hè</td>
+                                        <td>
+                                            <a th:href="@{'/price-seasons/' + ${s.id} + '/edit'}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></a>
+                                            <form th:action="@{'/price-seasons/' + ${s.id} + '/delete'}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa giá mùa này?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

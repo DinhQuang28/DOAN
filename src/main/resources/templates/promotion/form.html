@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Thông tin mã khuyến mãi')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-percent me-2 text-primary"></i><span th:text="${promotion.id != null ? 'Cập nhật mã khuyến mãi' : 'Tạo mã khuyến mãi mới'}">Tạo mã</span></h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/promotions}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Quay lại</a>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-md-8 col-lg-6">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <form th:action="${promotion.id != null ? '/promotions/' + promotion.id : '/promotions'}" method="post" th:object="${promotion}">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Mã khuyến mãi (Code) <span class="text-danger">*</span></label>
+                                        <input type="text" th:field="*{code}" class="form-control text-uppercase" placeholder="Ví dụ: SUMMER2026, WELCOME10..." required/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Tên chương trình <span class="text-danger">*</span></label>
+                                        <input type="text" th:field="*{name}" class="form-control" placeholder="Ví dụ: Giảm giá hè, Chào đón khách mới..." required/>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Loại giảm giá <span class="text-danger">*</span></label>
+                                            <select th:field="*{type}" class="form-select" required>
+                                                <option value="PERCENTAGE">Phần trăm (%)</option>
+                                                <option value="FIXED">Số tiền cố định (VNĐ)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Giá trị giảm <span class="text-danger">*</span></label>
+                                            <input type="number" th:field="*{value}" class="form-control" min="1" required/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Từ ngày</label>
+                                            <input type="date" th:field="*{startDate}" class="form-control"/>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Đến ngày</label>
+                                            <input type="date" th:field="*{endDate}" class="form-control"/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Số lượt dùng tối đa</label>
+                                            <input type="number" th:field="*{maxUses}" class="form-control" min="0" placeholder="0 nếu không giới hạn"/>
+                                        </div>
+                                        <div class="col-md-6 mb-3 d-flex align-items-center mt-3">
+                                            <div class="form-check">
+                                                <input type="checkbox" th:field="*{active}" class="form-check-input" id="activeCheck"/>
+                                                <label class="form-check-label fw-bold" for="activeCheck">Kích hoạt mã ngay</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Mô tả / Điều kiện áp dụng</label>
+                                        <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Điều kiện sử dụng..."></textarea>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end gap-2 mt-4">
+                                        <a th:href="@{/promotions}" class="btn btn-secondary">Hủy bỏ</a>
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Lưu mã khuyến mãi</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

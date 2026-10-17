@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Quản lý loại phòng')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-bed me-2 text-primary"></i>Danh sách loại phòng</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/room-types/new}" class="btn btn-sm btn-primary"><i class="fas fa-plus me-1"></i> Thêm loại phòng</a>
+                    </div>
+                </div>
+
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-1"></i> <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-1"></i> <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div class="row g-4">
+                    <div th:each="rt : ${roomTypes}" class="col-md-6 col-lg-4">
+                        <div class="card h-100 shadow-sm border-0">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h4 class="card-title fw-bold text-primary mb-0" th:text="${rt.name}">Phòng Đơn</h4>
+                                    <span class="badge bg-info text-dark"><i class="fas fa-users me-1"></i>Tối đa <span th:text="${rt.maxGuests}">2</span> khách</span>
+                                </div>
+                                <p class="card-text text-muted text-sm mb-3" th:text="${rt.description}">Mô tả chi tiết loại phòng...</p>
+                                
+                                <div class="p-2 bg-light rounded mb-3">
+                                    <small class="text-muted d-block fw-bold mb-1"><i class="fas fa-concierge-bell me-1"></i> Tiện nghi:</small>
+                                    <small class="text-dark" th:text="${rt.amenities}">WiFi, TV, Điều hòa...</small>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                    <div>
+                                        <small class="text-muted d-block">Giá cơ bản</small>
+                                        <h4 class="text-success fw-bold mb-0" th:text="${#numbers.formatDecimal(rt.basePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">300.000 đ</h4>
+                                    </div>
+                                    <div class="btn-group">
+                                        <a th:href="@{'/price-seasons?roomTypeId=' + ${rt.id}}" class="btn btn-sm btn-outline-info" title="Xem giá mùa"><i class="fas fa-calendar-alt"></i></a>
+                                        <a th:href="@{'/room-types/' + ${rt.id} + '/edit'}" class="btn btn-sm btn-outline-primary" title="Sửa"><i class="fas fa-edit"></i></a>
+                                        <form th:action="@{'/room-types/' + ${rt.id} + '/delete'}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa loại phòng này?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

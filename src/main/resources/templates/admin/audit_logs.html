@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Nhật ký thao tác hệ thống')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-history me-2 text-primary"></i>Nhật ký thao tác hệ thống (Audit Logs)</h1>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Thời gian</th>
+                                        <th>Tài khoản</th>
+                                        <th>Hành động</th>
+                                        <th>Đối tượng</th>
+                                        <th>ID đối tượng</th>
+                                        <th>Chi tiết thao tác</th>
+                                        <th>Địa chỉ IP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(logs)}">
+                                        <td colspan="7" class="text-center py-4 text-muted">Chưa có nhật ký ghi nhận nào.</td>
+                                    </tr>
+                                    <tr th:each="l : ${logs}">
+                                        <td th:text="${#temporals.format(l.timestamp, 'dd/MM/yyyy HH:mm:ss')}">20/09/2026 10:00:00</td>
+                                        <td><strong th:text="${l.user != null ? l.user.username : 'Hệ thống'}">admin</strong></td>
+                                        <td><span class="badge bg-primary" th:text="${l.action}">CREATE</span></td>
+                                        <td th:text="${l.entityType}">Booking</td>
+                                        <td th:text="${l.entityId}">1</td>
+                                        <td class="text-muted text-sm" th:text="${l.detail}">Tạo mới đơn đặt phòng</td>
+                                        <td th:text="${l.ipAddress != null ? l.ipAddress : '127.0.0.1'}">127.0.0.1</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

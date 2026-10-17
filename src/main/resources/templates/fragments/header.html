@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<div th:fragment="header">
+    <nav class="navbar navbar-expand-lg top-navbar fixed-top">
+        <div class="container-fluid px-3 px-lg-4">
+            <!-- Sidebar toggle on mobile -->
+            <button class="btn btn-sm btn-outline-secondary d-lg-none me-2 p-1 px-2" id="sidebarToggle" type="button">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Brand Logo -->
+            <a class="navbar-brand-custom" th:href="@{/dashboard}">
+                <div class="brand-icon-box">
+                    <i class="fas fa-hotel"></i>
+                </div>
+                <div class="d-flex flex-column">
+                    <span class="lh-1 fw-bold text-dark" style="font-size: 1.15rem;">Sunshine Homestay</span>
+                    <span class="text-muted fw-normal" style="font-size: 0.68rem; letter-spacing: 0.05em;">HỆ THỐNG QUẢN LÝ LƯU TRÚ & THU NGÂN</span>
+                </div>
+            </a>
+            
+            <!-- Center / Right Controls -->
+            <div class="ms-auto d-flex align-items-center gap-2 gap-md-3">
+                <!-- Realtime Status Indicator -->
+                <div class="realtime-badge d-none d-md-flex align-items-center">
+                    <span class="live-dot"></span>
+                    <span id="headerClock" class="fw-medium">Hôm nay</span>
+                </div>
+
+                <!-- Quick Action Buttons -->
+                <div class="d-none d-sm-flex align-items-center gap-2">
+                    <a th:href="@{/payments/new}" class="btn btn-sm btn-outline-primary" title="Tạo phiếu thu tiền mới">
+                        <i class="fas fa-cash-register me-1"></i> Thu tiền / QR
+                    </a>
+                    <a th:href="@{/bookings/new}" class="btn btn-sm btn-gradient" title="Tạo đặt phòng mới">
+                        <i class="fas fa-calendar-plus me-1"></i> Đặt phòng
+                    </a>
+                </div>
+
+                <!-- User Profile Dropdown -->
+                <div class="dropdown" sec:authorize="isAuthenticated()">
+                    <a class="user-avatar-btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="avatar-circle">
+                            <span sec:authentication="name" th:text="${#strings.substring(#authentication.name, 0, 1).toUpperCase()}">U</span>
+                        </div>
+                        <div class="d-none d-md-block text-start">
+                            <div class="fw-bold lh-1 text-sm" sec:authentication="name">Username</div>
+                            <small class="text-muted" style="font-size: 0.72rem;">Đang làm việc</small>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 py-2 mt-2" style="border-radius: var(--radius-md); min-width: 220px;">
+                        <li class="px-3 py-2 border-bottom">
+                            <span class="d-block text-muted text-xs">Đang đăng nhập với tư cách:</span>
+                            <span class="fw-bold text-dark" sec:authentication="name">admin</span>
+                        </li>
+                        <li>
+                            <a class="dropdown-item py-2" th:href="@{/dashboard}"><i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item py-2" th:href="@{/payments}"><i class="fas fa-receipt me-2 text-success"></i>Sổ quỹ & Thu ngân</a>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post" class="m-0 p-0">
+                                <button type="submit" class="dropdown-item py-2 text-danger"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+</div>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Quản lý khách hàng')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-users me-2 text-primary"></i>Hồ sơ khách hàng (CRM)</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/guests/new}" class="btn btn-sm btn-primary"><i class="fas fa-user-plus me-1"></i> Thêm khách hàng</a>
+                    </div>
+                </div>
+
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-1"></i> <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-1"></i> <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Search -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <form th:action="@{/guests}" method="get" class="row g-3">
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Tìm theo tên khách, số điện thoại, số CCCD/Passport hoặc email..."/>
+                                </div>
+                            </div>
+                            <div class="col-md-4 d-flex">
+                                <button type="submit" class="btn btn-primary me-2"><i class="fas fa-search me-1"></i> Tìm kiếm</button>
+                                <a th:href="@{/guests}" class="btn btn-outline-secondary"><i class="fas fa-redo me-1"></i> Đặt lại</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- List -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Họ tên</th>
+                                        <th>Số điện thoại</th>
+                                        <th>Số CCCD/Hộ chiếu</th>
+                                        <th>Email</th>
+                                        <th>Quốc tịch</th>
+                                        <th>Điểm tích lũy</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(guests)}">
+                                        <td colspan="7" class="text-center py-4 text-muted">Chưa có khách hàng nào.</td>
+                                    </tr>
+                                    <tr th:each="g : ${guests}">
+                                        <td>
+                                            <a th:href="@{'/guests/' + ${g.id}}" class="fw-bold text-decoration-none text-primary" th:text="${g.fullName}">Nguyễn Văn A</a>
+                                        </td>
+                                        <td th:text="${g.phone != null ? g.phone : 'N/A'}">0905123456</td>
+                                        <td><span class="badge bg-light text-dark border" th:text="${g.idNumber != null ? g.idNumber : 'Chưa có'}">048123456789</span></td>
+                                        <td th:text="${g.email != null ? g.email : 'N/A'}">email@example.com</td>
+                                        <td th:text="${g.nationality != null ? g.nationality : 'Việt Nam'}">Việt Nam</td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i><span th:text="${g.loyaltyPoints}">0</span> điểm</span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{'/guests/' + ${g.id}}" class="btn btn-sm btn-outline-info me-1" title="Xem hồ sơ & lịch sử"><i class="fas fa-eye"></i></a>
+                                            <a th:href="@{'/guests/' + ${g.id} + '/edit'}" class="btn btn-sm btn-outline-primary me-1" title="Sửa"><i class="fas fa-edit"></i></a>
+                                            <form th:action="@{'/guests/' + ${g.id} + '/delete'}" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa khách hàng này?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

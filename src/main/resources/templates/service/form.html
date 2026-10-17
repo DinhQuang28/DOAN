@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Thông tin dịch vụ')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-concierge-bell me-2 text-primary"></i><span th:text="${service.id != null ? 'Cập nhật dịch vụ' : 'Thêm dịch vụ mới'}">Thêm dịch vụ</span></h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/services}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Quay lại</a>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-md-8 col-lg-6">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <form th:action="${service.id != null ? '/services/' + service.id : '/services'}" method="post" th:object="${service}">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Tên dịch vụ <span class="text-danger">*</span></label>
+                                        <input type="text" th:field="*{name}" class="form-control" placeholder="Ví dụ: Ăn sáng buffet, Giặt sấy..." required/>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Phân loại <span class="text-danger">*</span></label>
+                                            <input type="text" th:field="*{category}" class="form-control" placeholder="Ví dụ: Ăn uống, Vận chuyển, Spa..." required/>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Đơn giá (VNĐ) <span class="text-danger">*</span></label>
+                                            <input type="number" th:field="*{price}" class="form-control" step="1000" min="0" required/>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Mô tả dịch vụ</label>
+                                        <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Chi tiết về dịch vụ, thời gian phục vụ..."></textarea>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input type="checkbox" th:field="*{active}" class="form-check-input" id="activeCheck"/>
+                                        <label class="form-check-label fw-bold" for="activeCheck">Đang hoạt động phục vụ khách</label>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end gap-2 mt-4">
+                                        <a th:href="@{/services}" class="btn btn-secondary">Hủy bỏ</a>
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Lưu dịch vụ</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

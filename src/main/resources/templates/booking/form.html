@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Tạo đơn đặt phòng')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-calendar-plus me-2 text-primary"></i>Tạo đơn đặt phòng mới</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/bookings/search}" class="btn btn-sm btn-outline-info me-2"><i class="fas fa-search me-1"></i> Tra cứu phòng</a>
+                        <a th:href="@{/bookings}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i> Danh sách đơn</a>
+                    </div>
+                </div>
+
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-1"></i> <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <form th:action="@{/bookings}" method="post" th:object="${bookingDTO}">
+                    <div class="row g-4">
+                        <!-- Left column: Booking info & Room selection -->
+                        <div class="col-lg-7">
+                            <div class="card shadow-sm border-0 mb-4">
+                                <div class="card-header bg-white py-3">
+                                    <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-clock me-2"></i>1. Thời gian lưu trú & Kênh đặt</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Ngày nhận phòng <span class="text-danger">*</span></label>
+                                            <input type="date" th:field="*{checkInDate}" class="form-control" required/>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Ngày trả phòng <span class="text-danger">*</span></label>
+                                            <input type="date" th:field="*{checkOutDate}" class="form-control" required/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Kênh đặt phòng</label>
+                                            <select th:field="*{channel}" class="form-select">
+                                                <option th:each="c : ${channels}" th:value="${c}" th:text="${c.name()}"></option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Số lượng khách</label>
+                                            <input type="number" th:field="*{numGuests}" class="form-control" min="1" max="10"/>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold"><i class="fas fa-percent me-1 text-danger"></i> Mã giảm giá / Voucher</label>
+                                        <input type="text" th:field="*{promotionCode}" class="form-control text-uppercase" placeholder="Ví dụ: WELCOME10"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Ghi chú đơn đặt phòng</label>
+                                        <textarea th:field="*{notes}" class="form-control" rows="2" placeholder="Yêu cầu riêng của khách (check-in sớm, đón sân bay...)"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Selected Rooms section -->
+                            <div class="card shadow-sm border-0 mb-4">
+                                <div class="card-header bg-white py-3">
+                                    <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-door-open me-2"></i>2. Chọn phòng đặt</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted text-sm">Đánh dấu chọn các phòng cần đặt cho đơn này:</p>
+                                    <div class="row g-2">
+                                        <div th:each="r : ${allRooms}" class="col-6 col-md-4">
+                                            <div class="form-check p-3 border rounded h-100" th:classappend="${selectedRooms.contains(r)} ? 'bg-primary-subtle border-primary' : 'bg-light'">
+                                                <input class="form-check-input" type="checkbox" name="roomIds" th:value="${r.id}" th:id="'room-' + ${r.id}"
+                                                       th:checked="${selectedRooms.contains(r)}"/>
+                                                <label class="form-check-label w-100 cursor-pointer" th:for="'room-' + ${r.id}">
+                                                    <strong class="d-block fs-6" th:text="'Phòng ' + ${r.roomNumber}">101</strong>
+                                                    <small class="text-muted d-block text-truncate" th:text="${r.roomType != null ? r.roomType.name : ''}">Phòng Đơn</small>
+                                                    <small class="text-success fw-bold d-block" th:text="${r.roomType != null ? #numbers.formatDecimal(r.roomType.basePrice, 0, 'COMMA', 0, 'POINT') + ' đ' : ''}">300.000 đ</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right column: Guest selection / Fast creation -->
+                        <div class="col-lg-5">
+                            <div class="card shadow-sm border-0 mb-4 sticky-top" style="top: 80px;">
+                                <div class="card-header bg-white py-3">
+                                    <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-user me-2"></i>3. Thông tin khách hàng</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Chọn khách đã có trong hệ thống</label>
+                                        <select th:field="*{guestId}" class="form-select" id="existingGuestSelect">
+                                            <option value="">-- Chọn khách quen / hồ sơ cũ --</option>
+                                            <option th:each="g : ${guests}" th:value="${g.id}" th:text="${g.fullName + ' - ' + g.phone + (g.idNumber != null ? ' (' + g.idNumber + ')' : '')}"></option>
+                                        </select>
+                                    </div>
+
+                                    <div class="text-center my-3 position-relative">
+                                        <hr/>
+                                        <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted text-sm">HOẶC NHẬP KHÁCH MỚI</span>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Họ và tên khách mới</label>
+                                        <input type="text" name="newGuestFullName" class="form-control" placeholder="Nguyễn Văn A"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Số điện thoại</label>
+                                        <input type="tel" name="newGuestPhone" class="form-control" placeholder="0905123456"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Số CCCD / Hộ chiếu</label>
+                                        <input type="text" name="newGuestIdNumber" class="form-control" placeholder="Số định danh..."/>
+                                    </div>
+
+                                    <div class="d-grid gap-2 mt-4 pt-3 border-top">
+                                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-check-circle me-1"></i> Xác nhận tạo đặt phòng</button>
+                                        <a th:href="@{/bookings}" class="btn btn-outline-secondary">Hủy bỏ</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

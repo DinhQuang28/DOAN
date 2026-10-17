@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Báo cáo & Thống kê doanh thu')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><i class="fas fa-chart-line me-2 text-primary"></i>Báo cáo & Thống kê kinh doanh</h1>
+                </div>
+
+                <!-- Top Metric Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-white bg-primary h-100 shadow-sm border-0">
+                            <div class="card-body">
+                                <h6 class="card-title text-uppercase text-white-50">Doanh thu tháng này</h6>
+                                <h2 class="display-6 fw-bold mb-0" th:text="${#numbers.formatDecimal(stats.monthlyRevenue, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</h2>
+                            </div>
+                            <div class="card-footer bg-transparent border-0"><i class="fas fa-wallet fa-2x float-end opacity-50"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-white bg-success h-100 shadow-sm border-0">
+                            <div class="card-body">
+                                <h6 class="card-title text-uppercase text-white-50">Công suất phòng (Occupancy)</h6>
+                                <h2 class="display-6 fw-bold mb-0" th:text="${stats.occupancyRate} + '%'">0%</h2>
+                            </div>
+                            <div class="card-footer bg-transparent border-0"><i class="fas fa-percentage fa-2x float-end opacity-50"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-white bg-danger h-100 shadow-sm border-0">
+                            <div class="card-body">
+                                <h6 class="card-title text-uppercase text-white-50">Phòng đang có khách</h6>
+                                <h2 class="display-6 fw-bold mb-0" th:text="${stats.occupiedRooms} + ' / ' + ${stats.totalRooms}">0 / 20</h2>
+                            </div>
+                            <div class="card-footer bg-transparent border-0"><i class="fas fa-bed fa-2x float-end opacity-50"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-dark bg-warning h-100 shadow-sm border-0">
+                            <div class="card-body">
+                                <h6 class="card-title text-uppercase text-black-50">Lượt khách Check-in hôm nay</h6>
+                                <h2 class="display-6 fw-bold mb-0" th:text="${stats.todayCheckIns}">0</h2>
+                            </div>
+                            <div class="card-footer bg-transparent border-0"><i class="fas fa-user-check fa-2x float-end opacity-50"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Daily revenue table -->
+                    <div class="col-lg-7">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0 fw-bold"><i class="fas fa-calendar-day me-2 text-primary"></i>Doanh thu 7 ngày gần nhất</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Ngày</th>
+                                                <th>Số đơn check-in</th>
+                                                <th class="text-end">Doanh thu thu về</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="r : ${dailyRevenue}">
+                                                <td><strong th:text="${#temporals.format(r.date, 'dd/MM/yyyy (EEEE)')}">20/09/2026</strong></td>
+                                                <td><span class="badge bg-light text-dark border" th:text="${r.bookingCount} + ' đơn'">1 đơn</span></td>
+                                                <td class="text-end fw-bold text-success fs-6" th:text="${#numbers.formatDecimal(r.revenue, 0, 'COMMA', 0, 'POINT')} + ' đ'">300.000 đ</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue by room type -->
+                    <div class="col-lg-5">
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0 fw-bold"><i class="fas fa-pie-chart me-2 text-primary"></i>Doanh thu theo loại phòng</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    <li th:if="${#maps.isEmpty(roomTypeRevenue)}" class="list-group-item text-center py-3 text-muted">
+                                        Chưa có số liệu phát sinh.
+                                    </li>
+                                    <li th:each="entry : ${roomTypeRevenue}" class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold" th:text="${entry.key}">Phòng Đơn</span>
+                                        <span class="badge bg-primary rounded-pill fs-6" th:text="${#numbers.formatDecimal(entry.value, 0, 'COMMA', 0, 'POINT')} + ' đ'">500.000 đ</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Channel stats -->
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0 fw-bold"><i class="fas fa-network-wired me-2 text-primary"></i>Tỷ trọng các kênh đặt phòng (OTA / Trực tiếp)</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    <li th:each="c : ${channelStats}" class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span th:text="${c.key}">WALK_IN</span>
+                                        <span class="badge bg-secondary rounded-pill" th:text="${c.value} + ' lượt'">5 lượt</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

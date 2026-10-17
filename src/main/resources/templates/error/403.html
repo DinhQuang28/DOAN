@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Lỗi 403 - Không có quyền')"></head>
+<body class="bg-light d-flex align-items-center justify-content-center" style="height: 100vh;">
+    <div class="text-center">
+        <h1 class="display-1 fw-bold text-danger"><i class="fas fa-ban"></i> 403</h1>
+        <h2 class="mb-4">Không có quyền truy cập</h2>
+        <p class="lead mb-4">Bạn không có quyền xem trang này hoặc thực hiện hành động này.</p>
+        <a th:href="@{/dashboard}" class="btn btn-primary"><i class="fas fa-home me-2"></i>Về trang chủ</a>
+    </div>
+</body>
+</html>
