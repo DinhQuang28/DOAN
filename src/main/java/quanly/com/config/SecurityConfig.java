@@ -21,7 +21,7 @@ public class SecurityConfig {
                 .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/images/**", "/webjars/**", "/api/public/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/reports/**", "/services/**", "/room-types/**", "/price-seasons/**", "/promotions/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers("/rooms/**", "/bookings/**", "/guests/**", "/payments/**").hasAnyRole("ADMIN", "MANAGER", "RECEPTIONIST")
+                .requestMatchers("/rooms/**", "/bookings/**", "/guests/**", "/payments/**", "/facilities/**").hasAnyRole("ADMIN", "MANAGER", "RECEPTIONIST")
                 .requestMatchers("/dashboard/**", "/dashboard").hasAnyRole("ADMIN", "MANAGER", "RECEPTIONIST")
                 .anyRequest().authenticated()
             )

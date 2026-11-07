@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head(${equipment.id == null ? 'Thêm mới trang thiết bị' : 'Chỉnh sửa trang thiết bị'})"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <div>
+                        <h1 class="h2 mb-1" th:text="${equipment.id == null ? 'Thêm trang thiết bị mới' : 'Chỉnh sửa trang thiết bị'}">
+                            <i class="fas fa-couch me-2 text-warning"></i>Thêm trang thiết bị
+                        </h1>
+                        <p class="text-muted small mb-0">Khai báo thông tin, vị trí phòng và tình trạng tài sản trang thiết bị</p>
+                    </div>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/facilities}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-lg-9">
+                        <div class="card shadow-sm border-0 border-top border-warning border-4 mb-4">
+                            <div class="card-body p-4">
+                                <form th:action="${equipment.id == null ? '/facilities' : '/facilities/' + equipment.id}" method="post" th:object="${equipment}">
+                                    <div class="row g-3">
+                                        <!-- Tên trang thiết bị -->
+                                        <div class="col-md-7">
+                                            <label class="form-label fw-bold">Tên trang thiết bị / Cơ sở vật chất <span class="text-danger">*</span></label>
+                                            <input type="text" th:field="*{name}" class="form-control" placeholder="Ví dụ: Smart TV Samsung 43 inch, Điều hòa Daikin 1.5HP..." required/>
+                                        </div>
+
+                                        <!-- Mã thiết bị -->
+                                        <div class="col-md-5">
+                                            <label class="form-label fw-bold">Mã quản lý thiết bị</label>
+                                            <input type="text" th:field="*{code}" class="form-control" placeholder="Ví dụ: TB-101-01 (để trống sẽ tự sinh)"/>
+                                            <small class="text-muted">Để trống hệ thống sẽ tự sinh mã quản lý theo phòng.</small>
+                                        </div>
+
+                                        <!-- Phân loại danh mục -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">Phân loại danh mục <span class="text-danger">*</span></label>
+                                            <select th:field="*{category}" class="form-select" required>
+                                                <option th:each="c : ${categories}" th:value="${c}" th:text="${c.displayName}"></option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Vị trí / Phòng -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">Bố trí tại phòng / Vị trí</label>
+                                            <select th:field="*{room}" class="form-select">
+                                                <option value="">-- Khu vực chung (Sảnh, Sân vườn, Lễ tân...) --</option>
+                                                <option th:each="r : ${rooms}" th:value="${r.id}" th:text="'Phòng ' + ${r.roomNumber} + ' (Tầng ' + ${r.floor} + ' - ' + ${r.roomType.name} + ')'"></option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Số lượng -->
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">Số lượng <span class="text-danger">*</span></label>
+                                            <input type="number" th:field="*{quantity}" class="form-control" min="1" required/>
+                                        </div>
+
+                                        <!-- Đơn giá mua -->
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">Đơn giá mua (VNĐ)</label>
+                                            <div class="input-group">
+                                                <input type="number" th:field="*{purchasePrice}" class="form-control" placeholder="0" min="0" step="1000"/>
+                                                <span class="input-group-text">đ</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Tình trạng -->
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">Tình trạng hoạt động <span class="text-danger">*</span></label>
+                                            <select th:field="*{status}" class="form-select" required>
+                                                <option th:each="st : ${statuses}" th:value="${st}" th:text="${st.displayName}"></option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Ngày lắp đặt -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">Ngày lắp đặt / Bắt đầu sử dụng</label>
+                                            <input type="date" th:field="*{installDate}" class="form-control"/>
+                                        </div>
+
+                                        <!-- Hạn bảo hành -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">Thời hạn bảo hành</label>
+                                            <input type="date" th:field="*{warrantyExpiry}" class="form-control"/>
+                                        </div>
+
+                                        <!-- Ghi chú / Chi tiết -->
+                                        <div class="col-12">
+                                            <label class="form-label fw-bold">Ghi chú / Thông số kỹ thuật / Số Serial</label>
+                                            <textarea th:field="*{notes}" class="form-control" rows="3" placeholder="Nhập số Serial, nhà cung cấp, lưu ý bảo dưỡng định kỳ..."></textarea>
+                                        </div>
+                                    </div>
+
+                                    <hr class="my-4">
+
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a th:href="@{/facilities}" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
+                                        <button type="submit" class="btn btn-primary px-4 fw-bold">
+                                            <i class="fas fa-save me-1"></i> Lưu thông tin thiết bị
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>
+

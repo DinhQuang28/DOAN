@@ -5,11 +5,14 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import quanly.com.model.*;
+import quanly.com.model.enums.EquipmentCategory;
+import quanly.com.model.enums.EquipmentStatus;
 import quanly.com.model.enums.RoomStatus;
 import quanly.com.model.enums.UserRole;
 import quanly.com.repository.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +48,9 @@ public class DataInitializer implements CommandLineRunner {
 
     @Autowired
     private PaymentRepository paymentRepository;
+
+    @Autowired
+    private EquipmentRepository equipmentRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -276,6 +282,149 @@ public class DataInitializer implements CommandLineRunner {
             }
 
             System.out.println("Data initialization with payments for Sunshine Homestay completed successfully!");
+        }
+
+        if (equipmentRepository.count() == 0 && roomRepository.count() > 0) {
+            Property prop = propertyRepository.findAll().isEmpty() ? null : propertyRepository.findAll().get(0);
+            List<Room> allRooms = roomRepository.findAll();
+            Room room101 = allRooms.stream().filter(r -> "101".equals(r.getRoomNumber())).findFirst().orElse(null);
+            Room room102 = allRooms.stream().filter(r -> "102".equals(r.getRoomNumber())).findFirst().orElse(null);
+            Room room201 = allRooms.stream().filter(r -> "201".equals(r.getRoomNumber())).findFirst().orElse(null);
+
+            List<Equipment> eqList = new ArrayList<>();
+
+            if (room101 != null) {
+                eqList.add(Equipment.builder()
+                        .code("TB101-TV")
+                        .name("Smart TV LG 43 inch 4K")
+                        .category(EquipmentCategory.ELECTRONICS)
+                        .status(EquipmentStatus.GOOD)
+                        .quantity(1)
+                        .purchasePrice(new BigDecimal("8500000"))
+                        .installDate(LocalDate.now().minusMonths(6))
+                        .warrantyExpiry(LocalDate.now().plusMonths(18))
+                        .room(room101)
+                        .property(prop)
+                        .notes("Kèm 1 điều khiển Magic Remote, kết nối Wifi tốt")
+                        .build());
+
+                eqList.add(Equipment.builder()
+                        .code("TB101-AC")
+                        .name("Điều hòa Daikin Inverter 1.5 HP")
+                        .category(EquipmentCategory.ELECTRONICS)
+                        .status(EquipmentStatus.GOOD)
+                        .quantity(1)
+                        .purchasePrice(new BigDecimal("11200000"))
+                        .installDate(LocalDate.now().minusMonths(6))
+                        .warrantyExpiry(LocalDate.now().plusMonths(18))
+                        .room(room101)
+                        .property(prop)
+                        .notes("Đã bảo dưỡng và nạp gas định kỳ")
+                        .build());
+
+                eqList.add(Equipment.builder()
+                        .code("TB101-FRIDGE")
+                        .name("Tủ lạnh mini Funiki 90L")
+                        .category(EquipmentCategory.ELECTRONICS)
+                        .status(EquipmentStatus.GOOD)
+                        .quantity(1)
+                        .purchasePrice(new BigDecimal("2700000"))
+                        .installDate(LocalDate.now().minusMonths(6))
+                        .room(room101)
+                        .property(prop)
+                        .build());
+
+                eqList.add(Equipment.builder()
+                        .code("TB101-BED")
+                        .name("Giường gỗ Sồi King Size 1m8 x 2m")
+                        .category(EquipmentCategory.FURNITURE)
+                        .status(EquipmentStatus.GOOD)
+                        .quantity(1)
+                        .purchasePrice(new BigDecimal("7500000"))
+                        .room(room101)
+                        .property(prop)
+                        .build());
+            }
+
+            if (room102 != null) {
+                eqList.add(Equipment.builder()
+                        .code("TB102-AC")
+                        .name("Điều hòa Panasonic 1.5 HP")
+                        .category(EquipmentCategory.ELECTRONICS)
+                        .status(EquipmentStatus.MAINTENANCE)
+                        .quantity(1)
+                        .purchasePrice(new BigDecimal("10500000"))
+                        .installDate(LocalDate.now().minusMonths(10))
+                        .room(room102)
+                        .property(prop)
+                        .notes("Đang chờ kỹ thuật hãng đến kiểm tra block làm lạnh")
+                        .build());
+
+                eqList.add(Equipment.builder()
+                        .code("TB102-LAMP")
+                        .name("Đèn ngủ để bàn cảm ứng")
+                        .category(EquipmentCategory.BEDDING)
+                        .status(EquipmentStatus.DAMAGED)
+                        .quantity(1)
+                        .purchasePrice(new BigDecimal("350000"))
+                        .room(room102)
+                        .property(prop)
+                        .notes("Bị chập bóng đèn, cần thay bóng mới")
+                        .build());
+            }
+
+            if (room201 != null) {
+                eqList.add(Equipment.builder()
+                        .code("TB201-TV")
+                        .name("Smart TV Samsung 50 inch QLED")
+                        .category(EquipmentCategory.ELECTRONICS)
+                        .status(EquipmentStatus.GOOD)
+                        .quantity(1)
+                        .purchasePrice(new BigDecimal("12500000"))
+                        .installDate(LocalDate.now().minusMonths(3))
+                        .room(room201)
+                        .property(prop)
+                        .build());
+            }
+
+            // Khu vực chung sảnh
+            eqList.add(Equipment.builder()
+                    .code("TB-COM-SOFA")
+                    .name("Bộ bàn ghế Sofa sảnh tiếp khách nệm da")
+                    .category(EquipmentCategory.FURNITURE)
+                    .status(EquipmentStatus.GOOD)
+                    .quantity(1)
+                    .purchasePrice(new BigDecimal("9800000"))
+                    .installDate(LocalDate.now().minusMonths(8))
+                    .property(prop)
+                    .notes("Bố trí tại sảnh tiếp khách tầng 1")
+                    .build());
+
+            eqList.add(Equipment.builder()
+                    .code("TB-COM-COFFEE")
+                    .name("Máy pha cà phê tự động Delonghi")
+                    .category(EquipmentCategory.GENERAL)
+                    .status(EquipmentStatus.GOOD)
+                    .quantity(1)
+                    .purchasePrice(new BigDecimal("14500000"))
+                    .installDate(LocalDate.now().minusMonths(4))
+                    .property(prop)
+                    .notes("Phục vụ khách uống cafe miễn phí tại sảnh")
+                    .build());
+
+            eqList.add(Equipment.builder()
+                    .code("TB-COM-WIFI")
+                    .name("Bộ phát Wifi chịu tải Ruijie Reyee")
+                    .category(EquipmentCategory.ELECTRONICS)
+                    .status(EquipmentStatus.GOOD)
+                    .quantity(3)
+                    .purchasePrice(new BigDecimal("3200000"))
+                    .property(prop)
+                    .notes("Phủ sóng Wifi xuyên suốt các tầng")
+                    .build());
+
+            equipmentRepository.saveAll(eqList);
+            System.out.println("Seeded sample facilities & equipments successfully!");
         }
     }
 

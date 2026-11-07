@@ -41,6 +41,12 @@
                 </a>
             </li>
             <li class="nav-item" sec:authorize="hasAnyRole('ADMIN', 'MANAGER', 'RECEPTIONIST')">
+                <a th:href="@{/facilities}" class="nav-link" th:classappend="${#httpServletRequest != null and #httpServletRequest.requestURI.startsWith('/facilities') ? 'active' : ''}">
+                    <i class="menu-icon fas fa-couch text-warning"></i>
+                    <span>Cơ sở vật chất</span>
+                </a>
+            </li>
+            <li class="nav-item" sec:authorize="hasAnyRole('ADMIN', 'MANAGER', 'RECEPTIONIST')">
                 <a th:href="@{/guests}" class="nav-link" th:classappend="${#httpServletRequest != null and #httpServletRequest.requestURI.startsWith('/guests') ? 'active' : ''}">
                     <i class="menu-icon fas fa-users-gear text-info"></i>
                     <span>Khách hàng (CRM)</span>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Quản lý Cơ sở vật chất & Thiết bị')"></head>
+<body class="d-flex flex-column h-100">
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <nav th:replace="fragments/sidebar :: sidebar"></nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-5 pt-3 main-content">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <div>
+                        <h1 class="h2 mb-1"><i class="fas fa-couch me-2 text-warning"></i>Quản lý Cơ sở vật chất & Trang thiết bị</h1>
+                        <p class="text-muted small mb-0">Theo dõi, kiểm kê trang thiết bị, tình trạng hoạt động theo từng phòng và khu vực chung</p>
+                    </div>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a th:href="@{/facilities/new}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-1"></i> Thêm trang thiết bị mới
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Alert Messages -->
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-1"></i> <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-1"></i> <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- KPI Summary Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card shadow-sm border-0 border-start border-primary border-4 h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="text-muted text-uppercase fw-semibold small">Tổng trang thiết bị</div>
+                                        <div class="fs-4 fw-bold text-dark mt-1" th:text="${stats.totalQuantity}">0</div>
+                                        <small class="text-muted" th:text="${stats.totalItems} + ' mặt hàng / danh mục'"></small>
+                                    </div>
+                                    <div class="rounded-circle bg-primary-subtle p-3 text-primary">
+                                        <i class="fas fa-boxes-stacked fa-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card shadow-sm border-0 border-start border-success border-4 h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="text-muted text-uppercase fw-semibold small">Hoạt động tốt</div>
+                                        <div class="fs-4 fw-bold text-success mt-1" th:text="${stats.goodCount}">0</div>
+                                        <small class="text-muted">Sẵn sàng phục vụ khách</small>
+                                    </div>
+                                    <div class="rounded-circle bg-success-subtle p-3 text-success">
+                                        <i class="fas fa-circle-check fa-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card shadow-sm border-0 border-start border-warning border-4 h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="text-muted text-uppercase fw-semibold small">Đang bảo trì / Sửa</div>
+                                        <div class="fs-4 fw-bold text-warning mt-1" th:text="${stats.maintenanceCount}">0</div>
+                                        <small class="text-muted">Đang theo dõi kỹ thuật</small>
+                                    </div>
+                                    <div class="rounded-circle bg-warning-subtle p-3 text-warning">
+                                        <i class="fas fa-wrench fa-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card shadow-sm border-0 border-start border-danger border-4 h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="text-muted text-uppercase fw-semibold small">Hỏng / Thất lạc</div>
+                                        <div class="fs-4 fw-bold text-danger mt-1" th:text="${stats.damagedCount + stats.lostCount}">0</div>
+                                        <small class="text-danger" th:text="${stats.damagedCount} + ' hỏng, ' + ${stats.lostCount} + ' mất'"></small>
+                                    </div>
+                                    <div class="rounded-circle bg-danger-subtle p-3 text-danger">
+                                        <i class="fas fa-triangle-exclamation fa-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Card -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <form th:action="@{/facilities}" method="get" class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Tìm kiếm thiết bị</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                                    <input type="text" name="keyword" th:value="${selectedKeyword}" class="form-control" placeholder="Tên hoặc mã CSVC..."/>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Phân loại danh mục</label>
+                                <select name="category" class="form-select">
+                                    <option value="">-- Tất cả danh mục --</option>
+                                    <option th:each="c : ${categories}" th:value="${c}" th:text="${c.displayName}" th:selected="${selectedCategory == c}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-semibold">Vị trí / Phòng</label>
+                                <select name="roomId" class="form-select">
+                                    <option value="">-- Tất cả vị trí --</option>
+                                    <option th:each="r : ${rooms}" th:value="${r.id}" th:text="'Phòng ' + ${r.roomNumber} + ' (T' + ${r.floor} + ')'" th:selected="${selectedRoomId == r.id}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-semibold">Tình trạng</label>
+                                <select name="status" class="form-select">
+                                    <option value="">-- Tất cả tình trạng --</option>
+                                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s.displayName}" th:selected="${selectedStatus == s}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end gap-1">
+                                <button type="submit" class="btn btn-primary flex-grow-1"><i class="fas fa-filter me-1"></i> Lọc</button>
+                                <a th:href="@{/facilities}" class="btn btn-outline-secondary" title="Đặt lại"><i class="fas fa-redo"></i></a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Table Card -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold">Danh sách trang thiết bị (<span th:text="${#lists.size(equipments)}">0</span>)</h6>
+                        <div class="small text-muted" th:if="${stats.totalValue > 0}">
+                            Tổng giá trị ước tính: <strong class="text-primary" th:text="${#numbers.formatDecimal(stats.totalValue, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã thiết bị</th>
+                                        <th>Tên trang thiết bị / CSVC</th>
+                                        <th>Danh mục</th>
+                                        <th>Vị trí bố trí</th>
+                                        <th class="text-center">Số lượng</th>
+                                        <th class="text-end">Đơn giá mua</th>
+                                        <th>Ngày trang bị</th>
+                                        <th>Tình trạng</th>
+                                        <th class="text-center">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(equipments)}">
+                                        <td colspan="9" class="text-center py-5 text-muted">
+                                            <i class="fas fa-box-open fa-3x mb-3 text-secondary d-block"></i>
+                                            Chưa có trang thiết bị nào phù hợp với bộ lọc tìm kiếm.
+                                        </td>
+                                    </tr>
+                                    <tr th:each="e : ${equipments}">
+                                        <td>
+                                            <span class="badge bg-light text-dark border font-monospace" th:text="${e.code}">TB001</span>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold text-dark" th:text="${e.name}">Smart TV LG 43 inch</div>
+                                            <small class="text-muted" th:if="${e.notes}" th:text="${e.notes}"></small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info-subtle text-info border border-info-subtle" th:text="${e.category.displayName}">Điện tử</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${e.room != null}" class="badge bg-primary text-white">
+                                                <i class="fas fa-door-closed me-1"></i> Phòng <span th:text="${e.room.roomNumber}">101</span>
+                                            </span>
+                                            <span th:unless="${e.room != null}" class="badge bg-secondary-subtle text-dark border">
+                                                <i class="fas fa-house-chimney me-1"></i> Khu vực chung
+                                            </span>
+                                        </td>
+                                        <td class="text-center fw-bold" th:text="${e.quantity}">1</td>
+                                        <td class="text-end text-dark">
+                                            <span th:if="${e.purchasePrice != null}" th:text="${#numbers.formatDecimal(e.purchasePrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">-</span>
+                                            <span th:unless="${e.purchasePrice != null}" class="text-muted">-</span>
+                                        </td>
+                                        <td>
+                                            <div small th:if="${e.installDate != null}">
+                                                <i class="fas fa-calendar-day text-muted me-1"></i>
+                                                <span th:text="${#temporals.format(e.installDate, 'dd/MM/yyyy')}"></span>
+                                            </div>
+                                            <small class="text-muted d-block" th:if="${e.warrantyExpiry != null}">
+                                                BH: <span th:text="${#temporals.format(e.warrantyExpiry, 'dd/MM/yyyy')}"></span>
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <span class="badge" th:classappend="${e.status.badgeClass}" th:text="${e.status.displayName}">Hoạt động tốt</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="dropdown d-inline-block">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    Đổi trạng thái
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow">
+                                                    <li><h6 class="dropdown-header">Cập nhật nhanh tình trạng</h6></li>
+                                                    <li th:each="st : ${statuses}">
+                                                        <form th:action="@{'/facilities/' + ${e.id} + '/status'}" method="post">
+                                                            <input type="hidden" name="status" th:value="${st}"/>
+                                                            <button type="submit" class="dropdown-item d-flex align-items-center justify-content-between" th:classappend="${e.status == st ? 'active' : ''}">
+                                                                <span th:text="${st.displayName}">Tốt</span>
+                                                                <i th:if="${e.status == st}" class="fas fa-check ms-2"></i>
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <a th:href="@{'/facilities/' + ${e.id} + '/edit'}" class="btn btn-sm btn-outline-primary ms-1" title="Chỉnh sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+
+                                            <form th:action="@{'/facilities/' + ${e.id} + '/delete'}" method="post" class="d-inline ms-1" onsubmit="return confirm('Bạn có chắc chắn muốn xóa trang thiết bị này?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>
+
